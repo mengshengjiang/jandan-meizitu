@@ -17,16 +17,25 @@ def get_text(urls):
 	for url in urls:
 		html = requests.get(url).content
 		soup = BeautifulSoup(html,'lxml')
-		tags = soup.find_all('div',attrs={'class':'text'})
-		for tag in tags:
-			mark = tag.find('a',attrs={'href':re.compile(r'http://jandan.net/duan/page-\d*#comment-\d*')}).text
-			content = tag.find('p').text
-			sup = tag.find('span',attrs={'id':re.compile(r'cos_support-\d*')}).text
-			un_sup = tag.find('span',attrs={'id':re.compile(r'cos_unsupport-\d*')}).text
 
-			if mark not in texts.keys():
-				texts[mark] = [content,sup,un_sup]
+		text_tags = soup.find_all('div',attrs={'class':'text'})
+		vote_tags = soup.find_all('div',attrs={'class':'jandan-vote'})
+		for tag in text_tags:
+			text_id = tag.find('a',attrs={'href':re.compile(r'http://jandan.net/duan/page-\d*#comment-\d*')}).text
+			text = []
+			for n in tag.find_all('p'):
+				text.append(n.text)
+			if text_id not in texts.keys():
+				texts[text_id] = [text,0,0]
+		for tag in vote_tags:
+			a = tag.find('a')
+			text_id = a.attrs['data-id']
+			sup = tag.find_all('span')[0].text
+			unsup = tag.find_all('span')[1].text
+			texts[text_id][1] = sup
+			texts[text_id][2] = unsup
 
+			
 	return texts
 
 def wash_text(texts,sup_cond,unsup_cond):
@@ -54,7 +63,7 @@ def display_text(start,end):
 		data = pickle.load(f)
 
 	for key,values in data.items():
-		print("段子:{} 内容:{} 赞数:{} 踩数:{}".format(key,values[0],values[1],values[2]))
+		print("段子:{} 内容:{} 赞数:{} 踩数:{} \n".format(key,values[0],values[1],values[2]))
 
 
 if __name__ == '__main__':
