@@ -1,13 +1,12 @@
 import urllib.request
 from bs4 import BeautifulSoup
 import os
+import re
 
 
 
 def get_html(url):
-	#请求
 	req = urllib.request.Request(url)
-	#响应
 	res = urllib.request.urlopen(req)
 	html = res.read()
 	return html
@@ -26,38 +25,39 @@ def get_links(html):
 	return links
 
 
+def download(start, end):
+	pattern = re.compile('\d+')
+	_dir = r"C:\Users\jms29\Pictures\jandan-meizitu"
+	if not os.path.exists(_dir):
+		os.makedirs(_dir)
 
 
+	urls = ["https://jandan.net/ooxx/page-" + str(n) + "#comments" 
+									for n in range(start, end+1)]
+	for url in urls:
+		num = re.findall(pattern, url)[0]	
+		if not os.path.exists(_dir + '\\page' + num):
+			os.makedirs(_dir + '\\page' + num)
 
-def download(start,end):
-	#创建 photo 文件夹
-	if not os.path.exists('photo'):
-		os.makedirs('photo')
+		links = get_links(get_html(url))
 
-	for x in range(start,end+1):
-		#创建文件夹
-		if not os.path.exists('photo\\meizitu'+str(x)):
-			os.makedirs('photo\\meizitu'+str(x))
-		
-		url = 'http://jandan.net/ooxx/page-'+ str(x)+ '#comments'
-		html = get_html(url)
-		links = get_links(html)
-		
-		i=0
+		i = 0
 		for link in links:
-			filename ='photo\\meizitu'+str(x)+'\\'+str(i)+ '.png'
+			filename = _dir + '\\page' + num + '\\' + str(i)+ '.png'
 			with open(filename,'w'):
 				try:
+					print("downloading %s.."%filename)
 					urllib.request.urlretrieve(link,filename)
-				except:
-					print("获取图片%s失败！"%filename)
+				except IOError:
+					print("download img%s failed！"%filename)
 			i += 1
 
 if __name__ == '__main__':
-	start = int(input('请输入开始页面(1-2400):  '))
-	end = int(input('请输入结束页面(1-2400):  '))
+	start = int(input('start page ? (1-220): '))
+	end = int(input('end page ? (1-220): '))
 	assert 1 < start < end < 2400
 	download(start,end)
+	print("download ended!")
 
 
 
