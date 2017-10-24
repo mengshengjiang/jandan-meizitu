@@ -57,7 +57,7 @@ if __name__ == '__main__':
 	end = int(input('end page ? (1-220): '))
 	assert 1 < start < end < 2400
 	download(start,end)
-	print("download ended!")
+	print("ended!")
 
 
 
