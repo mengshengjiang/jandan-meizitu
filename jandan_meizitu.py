@@ -6,8 +6,7 @@ import re
 
 
 def get_html(url):
-	req = urllib.request.Request(url)
-	res = urllib.request.urlopen(req)
+	res = urllib.request.urlopen(url)
 	html = res.read()
 	return html
 
