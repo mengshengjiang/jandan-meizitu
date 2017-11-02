@@ -12,10 +12,10 @@ HEADERS = {
 
 }
 
-HTTPS_PROXY = "https://127.0.0.1:1080"
-PDICT = {
-	"https":HTTPS_PROXY,
-}
+# HTTPS_PROXY = "https://127.0.0.1:1080"
+# PDICT = {
+# 	"https":HTTPS_PROXY,
+# }
 
 login_url = 'https://www.tumblr.com/login'
 dash_url = 'https://www.tumblr.com/dashboard'
@@ -34,20 +34,20 @@ def get_formkey(r):
 	# print(formkey)
 	return formkey
 
-def get_vurls(s, likes_num, PDICT):
+def get_vurls(s, likes_num):
 	nums =  likes_num//11 + 1
 	links_toget = ['https://www.tumblr.com/likes/page/' + str(num) for num in range(1,nums)]
 	
 	vurls = []
 	for link in links_toget:
-		r = s.get(link, proxies=PDICT)
+		r = s.get(link)
 		soup = BeautifulSoup(r.text,'lxml')
 		for source in soup.find_all('source'):
 			vurls.append(source['src'])
 	return vurls
 
 
-def download_video(vurls, _dir, PDICT):
+def download_video(vurls, _dir):
 	if not os.path.exists(_dir):
 		os.mkdir(_dir)
 
@@ -59,7 +59,7 @@ def download_video(vurls, _dir, PDICT):
 		with open(file_path, 'wb') as f:
 			count += 1
 			print('downloading %d/%d	 %s  ...'%(count,length,url))
-			f.write(requests.get(url, proxies=PDICT).content)
+			f.write(requests.get(url).content)
 
 if __name__ == '__main__':
 	default_dir = 'C:\\Users\\jms29\\Downloads\\video\\tumblr'
@@ -70,7 +70,7 @@ if __name__ == '__main__':
 	# visit loginurl to get form key
 	s = requests.Session()
 
-	r = s.post(login_url, headers=HEADERS, proxies=PDICT)
+	r = s.post(login_url, headers=HEADERS)
 	formkey = get_formkey(r)
 	payload = {
 		'user[email]':username,	
@@ -78,12 +78,12 @@ if __name__ == '__main__':
 		'form_key':formkey,
 	}
 	# successfully login
-	s.post(login_url, headers=HEADERS, data=payload, proxies=PDICT)
+	s.post(login_url, headers=HEADERS, data=payload)
 	# get vulrs
-	vurls = get_vurls(s,likes_num,PDICT)
+	vurls = get_vurls(s,likes_num)
 	print(vurls)
 	# download
-	download_video(vurls, _dir, PDICT)
+	download_video(vurls, _dir)
 
 
 
