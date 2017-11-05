@@ -1,5 +1,5 @@
 import requests
-import os
+import os,sys
 from bs4 import BeautifulSoup
 '''
 windows, download your liked video in tumblr
@@ -12,21 +12,8 @@ HEADERS = {
 
 }
 
-# HTTPS_PROXY = "https://127.0.0.1:1080"
-# PDICT = {
-# 	"https":HTTPS_PROXY,
-# }
-
 login_url = 'https://www.tumblr.com/login'
 dash_url = 'https://www.tumblr.com/dashboard'
-
-
-
-
-
-
-
-
 
 def get_formkey(r):
 	soup = BeautifulSoup(r.text,'lxml')
@@ -34,13 +21,19 @@ def get_formkey(r):
 	# print(formkey)
 	return formkey
 
+
 def get_vurls(s, likes_num):
-	nums =  likes_num//11 + 1
+	if likes_num >= 11:
+		nums =  likes_num//11 + 1
+	elif likes_num < 11 :
+		nums = 2
+	else:
+		pass
 	links_toget = ['https://www.tumblr.com/likes/page/' + str(num) for num in range(1,nums)]
 	
 	vurls = []
 	for link in links_toget:
-		r = s.get(link)
+		r = s.get(link)  # take 81% time
 		soup = BeautifulSoup(r.text,'lxml')
 		for source in soup.find_all('source'):
 			vurls.append(source['src'])
@@ -59,19 +52,23 @@ def download_video(vurls, _dir):
 		with open(file_path, 'wb') as f:
 			count += 1
 			print('downloading %d/%d	 %s  ...'%(count,length,url))
-			f.write(requests.get(url).content)
+			f.write(requests.get(url).content) # take 100% time
 
 if __name__ == '__main__':
-	default_dir = 'C:\\Users\\jms29\\Downloads\\video\\tumblr'
+	default_dir = os.getcwd() + '\\tumblr'
+	try:
+		requests.get('https://www.google.com.hk/?hl=zh-cn',timeout=2)
+	except:
+		print("could't connect to google,make sure your proxy is setting to GLOBAL!")
+		sys.exit(0)
 	_dir = input('where to store videos(press enter to set to %s):	' % default_dir) 	or default_dir
 	username = input('your username:	')
 	password = input('your password:	')
 	likes_num = int(input('likes number of your account:	'))
 	# visit loginurl to get form key
 	s = requests.Session()
-
-	r = s.post(login_url, headers=HEADERS)
-	formkey = get_formkey(r)
+	
+	r = s.post(login_url, headers=HEADERS, timeout=2)
 	payload = {
 		'user[email]':username,	
 		'user[password]':password,
@@ -119,8 +116,3 @@ if __name__ == '__main__':
 
 
 
-
-# url = 'https://stackoverflow.com/questions/8287628/proxies-with-python-requests-module'
-# s = requests.Session()
-# res = s.get(url, proxies=pdict)
-# print(res.text,res.status_code)
